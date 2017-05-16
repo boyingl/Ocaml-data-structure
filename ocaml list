@@ -1,0 +1,34 @@
+(*	1. Last *)
+Let rec last lst =
+  match lst with
+|[]-> None
+|[a]->Some a
+|hd::tl-> last tl
+
+(*	2. Second last *)
+Let rec last_two lst =
+  match lst with
+|[] | [_]-> None
+|[x;y]->Some (a,b)
+|hd::tl-> last tl
+
+(*	3. Kth element *)
+Let rec at k lst =
+ match lst with
+|[]->None
+|h::t-> if k = 1 then Some h else at (k-1) t
+
+(*	4. Length, tail recursion *)
+Let rec length = function
+|[]->0
+|[_]->1
+|_::tl -> 1+(length tl) 
+
+
+
+(*	5. Reverse list *)
+Let rec rev = function
+|[]->[]
+|[_]->[_]
+|hd :: tl -> rev tl :: hd
+
