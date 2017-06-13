@@ -1,0 +1,119 @@
+
+module type OrderedType = sig
+  type t
+  val compare : t -> t -> int
+end
+ 
+
+
+module Elem : OrderedType = struct
+  type t
+  let compare x y = 
+    if x>y then 1
+    else if x<y then -1
+    else 0
+end
+
+
+module type mPQ = 
+  functor(Elem : OrderedType) -> sig
+ 
+  type 'a bintree =
+    Empty
+  | Node of int * 'a * 'a bintree * 'a bintree
+ 
+  type mpq = Elem.t bintree
+ 
+  (* type mpq *)
+ 
+  val empty : mpq
+  val isEmpty : mpq -> bool
+  val merge : mpq -> mpq -> mpq
+  val insert : Elem.t -> mpq -> mpq
+  val findMin : mpq -> Elem.t option
+  val deleteMin : mpq -> mpq option
+end
+
+
+module MaxiHeapmPQ : mPQ = 
+  functor(E : OrderedType) -> struct
+
+  open E
+
+  type 'a bintree =
+    Empty
+  | Node of int * 'a * 'a bintree * 'a bintree
+ 
+  type mpq = t bintree
+
+  let empty = Empty
+
+  let isEmpty = fun x -> (x = empty)
+
+  let getSize = function
+    | Empty -> 0
+    | Node(s, _, _, _) -> s
+
+  let getBig q1 q2 q3 = 
+    let one = getSize q1 in
+    let two = getSize q2 in
+    let three = getSize q3 in
+    if (one >= two && one >= three) then q1
+    else if (two >= one && two >= three) then q2
+    else q3
+
+  let getRest q1 q2 q3 = 
+    let big = getBig q1 q2 q3 in
+    if big = q1 then (q2, q3)
+    else if big = q2 then (q1, q3)
+    else (q1, q2)
+(*
+  let getSmall q1 q2 q3= 
+    let one = getSize q1 in
+    let two = getSize q2 in
+    let three = getSize q3 in
+    if one <= two && one <= three then q1
+    else if two <= one && two <= three then q2
+    else q3
+
+
+  let getMiddle q1 q2 q3= 
+    let one = getSize q1 in
+    let two = getSize q2 in
+    let three = getSize q3 in
+    if (two <= one && one <= three) || (three <= one && one <= two) then q1
+    else if (one <= two && two <= three) || (three <= two && two <= one) then q2
+    else q3
+*)
+
+  (* Node(size, root, left, right) *)
+  let rec merge q1 q2 = 
+    match (q1, q2) with
+      | (Empty, _) -> q2
+      | (_, Empty) -> q1
+      | (Node(s1, root1, l1, r1), Node(s2, root2, l2, r2)) ->
+        if(root1 < root2) then 
+          let big = getBig l1 r1 q2 in
+          let (middle, small) = getRest l1 r1 q2 in
+          Node(s1+s2, root1, big, merge middle small)
+        else   
+          let big = getBig l2 r2 q1 in
+          let (middle, small) = getRest l2 r2 q1 in
+          Node(s1+s2, root2, big, merge middle small)
+        
+
+
+  let insert ele q =
+    let binT = Node(1, ele, Empty, Empty) in 
+      merge binT q
+
+  let findMin = function
+    | Empty -> None
+    | Node(_, root, _, _) -> Some root 
+
+  let deleteMin = function
+    | Empty -> None
+    | Node(_, _, left, right) -> Some (merge left right)
+
+end
+
